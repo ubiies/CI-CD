@@ -27,6 +27,7 @@
         <sonar.language>java</sonar.language>
 
     </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
