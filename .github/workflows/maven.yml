@@ -61,8 +61,4 @@ jobs:
         script: "./startup.sh"
 
     - name: SonarQube Scan
-      uses: sonarsource/sonarqube-scan-action@master
-      env:
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        SONAR_HOST_URL: ${{ secrets.SONAR_HOST }}
-        run: mvn clean verify sonar:sonar -Dsonar.projectKey=ci-cd-test -Dsonar.projectName='ci/cd test' -Dsonar.host.url=http://133.186.241.167:9000 -Dsonar.token=sqp_313fef176195405fe6756e09070fa8ae3b686736
+      run: mvn clean verify sonar:sonar -Dsonar.projectKey=ci-cd-test -Dsonar.projectName='ci/cd test' -Dsonar.host.url=http://133.186.241.167:9000 -Dsonar.token=sqp_313fef176195405fe6756e09070fa8ae3b686736
