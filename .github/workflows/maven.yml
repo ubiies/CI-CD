@@ -39,3 +39,13 @@ jobs:
         source: "target/*.jar"
         target: "~/"
         rm: false
+    
+    - name: execute shell script
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SSH_IP }}
+        username: ${{ secrets.SSH_ID }}
+        key: ${{ secrets.SSH_KEY }}
+        port: ${{ secrets.SSH_PORT }}
+        script_stop: true
+        script: "./startup.sh"
