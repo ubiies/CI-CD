@@ -38,6 +38,64 @@ jobs:
     #   env:
     #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v1
+
+    - name: Build with Maven
+      run: mvn -B package --file pom.xml
+     
+    - name: Log in to Docker Hub
+      run: echo "${{ secrets.DOCKER_PASSWORD }}" | sudo docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+    - name: Build Docker image with Docker compose
+      run : sudo docker-compose build
+
+    - name: Push Docker image to Docker Hub
+      run: |
+        sudo docker-compose push
+
+    - name: Copy files to server
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.SSH_IP }}
+        username: ${{ secrets.SSH_ID }}
+        key: ${{ secrets.SSH_KEY }}
+        port: ${{ secrets.SSH_PORT }}
+        source: "."
+        target: "/home/ubuntu/test"
+
+    - name: Stop existing containers on port 80 and 8080
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SSH_IP }}
+        username: ${{ secrets.SSH_ID }}
+        key: ${{ secrets.SSH_KEY }}
+        port: ${{ secrets.SSH_PORT }}
+        script: |
+          ports_to_check=("80" "8080")
+          for port in "${ports_to_check[@]}"; do
+            existing_container=$(sudo lsof -i:$port -t)
+            if [ ! -z "$existing_container" ]; then
+              sudo docker stop $existing_container
+              sudo docker rm $existing_container
+            fi
+          done
+
+    - name: Deploy to server via SSH
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SSH_IP }}
+        username: ${{ secrets.SSH_ID }}
+        key: ${{ secrets.SSH_KEY }}
+        port: ${{ secrets.SSH_PORT }}
+        script: |
+          cd /home/ubuntu/test
+          docker-compose pull
+          docker-compose down || true
+          docker-compose up -d
 
     - name: upload file
       uses: appleboy/scp-action@v0.1.7
